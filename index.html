@@ -86,31 +86,34 @@
 
     // Chronological journey through KL's development
     const timeline = [
-        // Start: Overview from far - show ground quickly
-        { coordinates: [101.6941, 3.1466], zoom: 12.5, pitch: 45, bearing: 0, duration: 1500, pause: 500 },
+        // Start: Overview from far - show ground very quickly
+        { coordinates: [101.6941, 3.1466], zoom: 12.5, pitch: 45, bearing: 0, duration: 800, pause: 200 },
         
-        // Zoom to Dayabumi (1984) - closer zoom to see colored tops
-        { coordinates: [101.6941, 3.1466], zoom: 16.5, pitch: 65, bearing: 30, duration: 3500, pause: 2000 },
+        // Zoom to Dayabumi (1984) - zoom in fast to show colored buildings
+        { coordinates: [101.6941, 3.1466], zoom: 16.5, pitch: 60, bearing: 30, duration: 2500, pause: 2000 },
         
         // Pan to KL Tower area (1995)
-        { coordinates: [101.7034, 3.1529], zoom: 16.5, pitch: 68, bearing: -20, duration: 4000, pause: 2000 },
+        { coordinates: [101.7034, 3.1529], zoom: 16.5, pitch: 60, bearing: -20, duration: 3500, pause: 2000 },
         
         // Pan to KLCC/Petronas (1996)
-        { coordinates: [101.7116, 3.1579], zoom: 16.5, pitch: 65, bearing: 40, duration: 4000, pause: 2000 },
+        { coordinates: [101.7116, 3.1579], zoom: 16.5, pitch: 60, bearing: 40, duration: 3500, pause: 2000 },
         
         // Pan to TRX (2019)
-        { coordinates: [101.7186, 3.1415], zoom: 16.5, pitch: 68, bearing: -30, duration: 4000, pause: 2000 },
+        { coordinates: [101.7186, 3.1415], zoom: 16.5, pitch: 60, bearing: -30, duration: 3500, pause: 2000 },
         
         // Pan to Merdeka 118 (2023)
-        { coordinates: [101.7004, 3.1415], zoom: 16.2, pitch: 65, bearing: 15, duration: 4000, pause: 2000 },
+        { coordinates: [101.7004, 3.1415], zoom: 16.5, pitch: 60, bearing: 15, duration: 3500, pause: 2000 },
         
         // Zoom out to overview
-        { coordinates: [101.7050, 3.1480], zoom: 13, pitch: 50, bearing: 0, duration: 3500, pause: 1000 }
+        { coordinates: [101.7050, 3.1480], zoom: 13, pitch: 50, bearing: 0, duration: 3000, pause: 800 }
     ];
 
     let currentStep = 0;
 
     map.on('load', () => {
+        // First, modify the base map to make ground dark grey instead of black
+        map.setPaintProperty('background', 'background-color', '#4a4a4a');
+        
         // Add 3D buildings with solid colors
         map.addLayer({
             'id': '3d-buildings',
@@ -136,21 +139,21 @@
                     ['linear'],
                     ['zoom'],
                     12, 0,
-                    16, ['get', 'render_height']
+                    13.5, ['get', 'render_height']
                 ],
                 'fill-extrusion-base': [
                     'interpolate',
                     ['linear'],
                     ['zoom'],
                     12, 0,
-                    16, ['get', 'render_min_height']
+                    13.5, ['get', 'render_min_height']
                 ],
                 'fill-extrusion-opacity': 0.95
             }
         });
 
         // Start the animation loop immediately
-        setTimeout(animateTimeline, 500);
+        setTimeout(animateTimeline, 200);
     });
 
     function animateTimeline() {
