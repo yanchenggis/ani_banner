@@ -2,142 +2,64 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>KL Iconic Buildings Journey</title>
+    <title>KL 3D Buildings</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src='https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js'></script>
     <link href='https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css' rel='stylesheet' />
     <style>
         body { margin: 0; padding: 0; }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; }
-        #info {
+        #startBtn {
             position: absolute;
-            top: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(135deg, rgba(15,93,244,0.95) 19%, rgba(33,200,117,0.95) 89%);
-            color: white;
-            padding: 20px 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            z-index: 1;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            text-align: center;
-            min-width: 300px;
-        }
-        #buildingName {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 8px;
-        }
-        #buildingYear {
-            font-size: 16px;
-            opacity: 0.9;
-        }
-        #controls {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: white;
-            padding: 15px 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            z-index: 1;
-        }
-        button {
+            top: 20px;
+            left: 20px;
             padding: 12px 24px;
-            margin: 0 8px;
             border: none;
             border-radius: 6px;
-            background: #0F5DF4;
+            background: rgba(15,93,244,0.9);
             color: white;
             cursor: pointer;
             font-size: 14px;
             font-weight: 600;
+            z-index: 1;
             transition: all 0.3s;
         }
-        button:hover {
-            background: #21C875;
-            transform: translateY(-2px);
-        }
-        button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
+        #startBtn:hover {
+            background: rgba(33,200,117,0.9);
         }
     </style>
 </head>
 <body>
-<div id="info">
-    <div id="buildingName">Journey Through KL's Skyline</div>
-    <div id="buildingYear">Click Start to begin the tour</div>
-</div>
-<div id="controls">
-    <button id="startBtn" onclick="startTour()">▶ Start Tour</button>
-    <button id="pauseBtn" onclick="pauseTour()" disabled>⏸ Pause</button>
-    <button onclick="resetTour()">↺ Restart</button>
-</div>
+<button id="startBtn" onclick="startTour()">▶ Start Tour</button>
 <div id="map"></div>
 <script>
     const map = new maplibregl.Map({
         container: 'map',
         style: 'https://tiles.openfreemap.org/styles/liberty',
         center: [101.6941, 3.1466],
-        zoom: 12,
-        pitch: 60,
-        bearing: -17
+        zoom: 14,
+        pitch: 50,
+        bearing: 0
     });
 
-    // Iconic buildings in chronological order
-    const buildings = [
-        {
-            name: "Dayabumi Complex",
-            year: "1984",
-            coordinates: [101.6941, 3.1466],
-            zoom: 16.5,
-            pitch: 60,
-            bearing: 45
-        },
-        {
-            name: "KL Tower (Menara KL)",
-            year: "1995",
-            coordinates: [101.7034, 3.1529],
-            zoom: 16.5,
-            pitch: 65,
-            bearing: -30
-        },
-        {
-            name: "Petronas Twin Towers",
-            year: "1996",
-            coordinates: [101.7116, 3.1579],
-            zoom: 16.5,
-            pitch: 60,
-            bearing: 20
-        },
-        {
-            name: "The Exchange 106 (TRX)",
-            year: "2019",
-            coordinates: [101.7186, 3.1415],
-            zoom: 16.5,
-            pitch: 65,
-            bearing: -45
-        },
-        {
-            name: "Merdeka 118",
-            year: "2023",
-            coordinates: [101.7004, 3.1387],
-            zoom: 16.5,
-            pitch: 70,
-            bearing: 10
-        }
+    // Key viewpoints across KL skyline
+    const viewpoints = [
+        { coordinates: [101.6941, 3.1466], zoom: 14, pitch: 50, bearing: 0 },    // Dayabumi area
+        { coordinates: [101.7000, 3.1500], zoom: 14.2, pitch: 52, bearing: 30 },  // Transition
+        { coordinates: [101.7034, 3.1529], zoom: 14, pitch: 55, bearing: -20 },   // KL Tower area
+        { coordinates: [101.7075, 3.1554], zoom: 14.2, pitch: 50, bearing: 10 },  // Transition
+        { coordinates: [101.7116, 3.1579], zoom: 14, pitch: 52, bearing: 40 },    // KLCC area
+        { coordinates: [101.7151, 3.1497], zoom: 14.2, pitch: 55, bearing: -30 }, // Transition
+        { coordinates: [101.7186, 3.1415], zoom: 14, pitch: 50, bearing: -45 },   // TRX area
+        { coordinates: [101.7095, 3.1401], zoom: 14.2, pitch: 52, bearing: 20 },  // Transition
+        { coordinates: [101.7004, 3.1387], zoom: 14, pitch: 55, bearing: 10 }     // Merdeka area
     ];
 
     let currentIndex = 0;
     let tourRunning = false;
-    let tourTimeout;
 
     map.on('load', () => {
-        // Add 3D buildings with your color theme
+        // Add 3D buildings with solid colors (no fade effect)
         map.addLayer({
             'id': '3d-buildings',
             'source': 'openmaptiles',
@@ -157,109 +79,54 @@
                     300, '#0A4BC4',
                     450, '#0539A4'
                 ],
-                'fill-extrusion-height': [
-                    'interpolate',
-                    ['linear'],
-                    ['zoom'],
-                    13, 0,
-                    16.5, ['get', 'render_height']
-                ],
-                'fill-extrusion-base': [
-                    'interpolate',
-                    ['linear'],
-                    ['zoom'],
-                    13, 0,
-                    16.5, ['get', 'render_min_height']
-                ],
-                'fill-extrusion-opacity': 0.9
+                'fill-extrusion-height': ['get', 'render_height'],
+                'fill-extrusion-base': ['get', 'render_min_height'],
+                'fill-extrusion-opacity': 1.0
             }
         });
     });
 
-    function updateInfo(building) {
-        document.getElementById('buildingName').textContent = building.name;
-        document.getElementById('buildingYear').textContent = `Completed in ${building.year}`;
-    }
-
-    function flyToBuilding(index) {
-        if (index >= buildings.length) {
-            tourRunning = false;
-            document.getElementById('startBtn').disabled = false;
-            document.getElementById('pauseBtn').disabled = true;
-            document.getElementById('buildingName').textContent = "Tour Complete!";
-            document.getElementById('buildingYear').textContent = "Click Restart to watch again";
+    function flyToNext() {
+        if (!tourRunning || currentIndex >= viewpoints.length) {
+            if (currentIndex >= viewpoints.length) {
+                // Loop back to start
+                currentIndex = 0;
+                setTimeout(() => {
+                    if (tourRunning) flyToNext();
+                }, 1000);
+            }
             return;
         }
 
-        const building = buildings[index];
-        updateInfo(building);
-
-        // Start from low zoom (buildings flat)
+        const point = viewpoints[currentIndex];
+        
         map.flyTo({
-            center: building.coordinates,
-            zoom: 13.5,
-            pitch: building.pitch,
-            bearing: building.bearing,
-            duration: 2000,
-            essential: true
+            center: point.coordinates,
+            zoom: point.zoom,
+            pitch: point.pitch,
+            bearing: point.bearing,
+            duration: 4000,
+            essential: true,
+            easing: (t) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
         });
 
-        // Then zoom in to see buildings grow
+        currentIndex++;
         setTimeout(() => {
-            if (tourRunning) {
-                map.flyTo({
-                    center: building.coordinates,
-                    zoom: building.zoom,
-                    pitch: building.pitch,
-                    bearing: building.bearing,
-                    duration: 3000,
-                    essential: true
-                });
-
-                // Move to next building after viewing
-                tourTimeout = setTimeout(() => {
-                    if (tourRunning) {
-                        currentIndex++;
-                        flyToBuilding(currentIndex);
-                    }
-                }, 4000);
-            }
-        }, 2500);
+            if (tourRunning) flyToNext();
+        }, 4500);
     }
 
     function startTour() {
-        tourRunning = true;
-        currentIndex = 0;
-        document.getElementById('startBtn').disabled = true;
-        document.getElementById('pauseBtn').disabled = false;
-        flyToBuilding(currentIndex);
-    }
-
-    function pauseTour() {
-        tourRunning = false;
-        clearTimeout(tourTimeout);
-        document.getElementById('startBtn').disabled = false;
-        document.getElementById('pauseBtn').disabled = true;
-        document.getElementById('startBtn').textContent = '▶ Resume';
-    }
-
-    function resetTour() {
-        tourRunning = false;
-        clearTimeout(tourTimeout);
-        currentIndex = 0;
-        document.getElementById('startBtn').disabled = false;
-        document.getElementById('pauseBtn').disabled = true;
-        document.getElementById('startBtn').textContent = '▶ Start Tour';
-        document.getElementById('buildingName').textContent = "Journey Through KL's Skyline";
-        document.getElementById('buildingYear').textContent = "Click Start to begin the tour";
-        
-        map.flyTo({
-            center: [101.6941, 3.1466],
-            zoom: 12,
-            pitch: 60,
-            bearing: -17,
-            duration: 2000
-        });
+        const btn = document.getElementById('startBtn');
+        if (!tourRunning) {
+            tourRunning = true;
+            currentIndex = 0;
+            btn.textContent = '⏸ Pause';
+            flyToNext();
+        } else {
+            tourRunning = false;
+            btn.textContent = '▶ Resume';
+        }
     }
 
     map.addControl(new maplibregl.NavigationControl(), 'bottom-right');
