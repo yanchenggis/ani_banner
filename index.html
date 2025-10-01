@@ -2,70 +2,122 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>KL 3D Buildings</title>
+    <title>KL Skyline Evolution</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src='https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js'></script>
     <link href='https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css' rel='stylesheet' />
     <style>
-        body { margin: 0; padding: 0; }
-        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
-        #startBtn {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 6px;
-            background: rgba(15,93,244,0.9);
-            color: white;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            z-index: 1;
-            transition: all 0.3s;
+        body { 
+            margin: 0; 
+            padding: 0;
+            background: linear-gradient(135deg, rgba(15,93,244,1) 19%, rgba(33,200,117,1) 89%);
         }
-        #startBtn:hover {
-            background: rgba(33,200,117,0.9);
+        .banner-container {
+            width: 100%;
+            height: 70vh;
+            min-height: 600px;
+            position: relative;
+            overflow: hidden;
+        }
+        #map { 
+            position: absolute; 
+            top: 0; 
+            bottom: 0; 
+            width: 100%; 
+            height: 100%;
+        }
+        .content-overlay {
+            position: absolute;
+            top: 75%;
+            left: 50px;
+            transform: translateY(-50%);
+            color: white;
+            z-index: 10;
+            pointer-events: none;
+        }
+        .title {
+            font-size: 4em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            font-family: Arial, sans-serif;
+        }
+        .subtitle {
+            font-size: 1.5em;
+            opacity: 0.9;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            font-family: Arial, sans-serif;
+        }
+        @media (max-width: 768px) {
+            .banner-container {
+                height: 50vh;
+                min-height: 400px;
+            }
+            .content-overlay {
+                left: 30px;
+                top: 80%;
+            }
+            .title {
+                font-size: 2.5em;
+            }
+            .subtitle {
+                font-size: 1.2em;
+            }
         }
     </style>
 </head>
 <body>
-<button id="startBtn" onclick="startTour()">▶ Start Tour</button>
-<div id="map"></div>
+    <div class="banner-container">
+        <div id="map"></div>
+        <div class="content-overlay">
+            <div class="title">Urban Analytics</div>
+            <div class="subtitle">From Understanding Data to Developing Insights</div>
+        </div>
+    </div>
 <script>
     const map = new maplibregl.Map({
         container: 'map',
         style: 'https://tiles.openfreemap.org/styles/liberty',
         center: [101.6941, 3.1466],
-        zoom: 14,
-        pitch: 50,
+        zoom: 12.5,
+        pitch: 45,
         bearing: 0
     });
 
-    // Key viewpoints across KL skyline
-    const viewpoints = [
-        { coordinates: [101.6941, 3.1466], zoom: 14, pitch: 50, bearing: 0 },    // Dayabumi area
-        { coordinates: [101.7000, 3.1500], zoom: 14.2, pitch: 52, bearing: 30 },  // Transition
-        { coordinates: [101.7034, 3.1529], zoom: 14, pitch: 55, bearing: -20 },   // KL Tower area
-        { coordinates: [101.7075, 3.1554], zoom: 14.2, pitch: 50, bearing: 10 },  // Transition
-        { coordinates: [101.7116, 3.1579], zoom: 14, pitch: 52, bearing: 40 },    // KLCC area
-        { coordinates: [101.7151, 3.1497], zoom: 14.2, pitch: 55, bearing: -30 }, // Transition
-        { coordinates: [101.7186, 3.1415], zoom: 14, pitch: 50, bearing: -45 },   // TRX area
-        { coordinates: [101.7095, 3.1401], zoom: 14.2, pitch: 52, bearing: 20 },  // Transition
-        { coordinates: [101.7004, 3.1387], zoom: 14, pitch: 55, bearing: 10 }     // Merdeka area
+    // Chronological journey through KL's development
+    const timeline = [
+        // Start: Overview from far (1980s - Dayabumi era)
+        { coordinates: [101.6941, 3.1466], zoom: 12.5, pitch: 45, bearing: 0, duration: 3000 },
+        
+        // Zoom to Dayabumi (1984)
+        { coordinates: [101.6941, 3.1466], zoom: 15.5, pitch: 55, bearing: 30, duration: 4000 },
+        
+        // Pan to KL Tower area (1995)
+        { coordinates: [101.7034, 3.1529], zoom: 15.5, pitch: 58, bearing: -20, duration: 4000 },
+        
+        // Pan to KLCC/Petronas (1996)
+        { coordinates: [101.7116, 3.1579], zoom: 15.5, pitch: 55, bearing: 40, duration: 4000 },
+        
+        // Pan to TRX (2019)
+        { coordinates: [101.7186, 3.1415], zoom: 15.5, pitch: 60, bearing: -30, duration: 4000 },
+        
+        // Pan to Merdeka 118 (2023)
+        { coordinates: [101.7004, 3.1387], zoom: 15.5, pitch: 62, bearing: 15, duration: 4000 },
+        
+        // Zoom out to overview
+        { coordinates: [101.7050, 3.1480], zoom: 13, pitch: 50, bearing: 0, duration: 4000 }
     ];
 
-    let currentIndex = 0;
-    let tourRunning = false;
+    let currentStep = 0;
 
     map.on('load', () => {
-        // Add 3D buildings with solid colors (no fade effect)
+        // Add 3D buildings with solid colors
         map.addLayer({
             'id': '3d-buildings',
             'source': 'openmaptiles',
             'source-layer': 'building',
             'type': 'fill-extrusion',
-            'minzoom': 13,
+            'minzoom': 12,
             'paint': {
                 'fill-extrusion-color': [
                     'interpolate',
@@ -79,57 +131,50 @@
                     300, '#0A4BC4',
                     450, '#0539A4'
                 ],
-                'fill-extrusion-height': ['get', 'render_height'],
-                'fill-extrusion-base': ['get', 'render_min_height'],
-                'fill-extrusion-opacity': 1.0
+                'fill-extrusion-height': [
+                    'interpolate',
+                    ['linear'],
+                    ['zoom'],
+                    12, 0,
+                    15.5, ['get', 'render_height']
+                ],
+                'fill-extrusion-base': [
+                    'interpolate',
+                    ['linear'],
+                    ['zoom'],
+                    12, 0,
+                    15.5, ['get', 'render_min_height']
+                ],
+                'fill-extrusion-opacity': 0.95
             }
         });
+
+        // Start the animation loop
+        setTimeout(animateTimeline, 1000);
     });
 
-    function flyToNext() {
-        if (!tourRunning || currentIndex >= viewpoints.length) {
-            if (currentIndex >= viewpoints.length) {
-                // Loop back to start
-                currentIndex = 0;
-                setTimeout(() => {
-                    if (tourRunning) flyToNext();
-                }, 1000);
-            }
+    function animateTimeline() {
+        if (currentStep >= timeline.length) {
+            currentStep = 0;
+            setTimeout(animateTimeline, 2000);
             return;
         }
 
-        const point = viewpoints[currentIndex];
+        const step = timeline[currentStep];
         
         map.flyTo({
-            center: point.coordinates,
-            zoom: point.zoom,
-            pitch: point.pitch,
-            bearing: point.bearing,
-            duration: 4000,
+            center: step.coordinates,
+            zoom: step.zoom,
+            pitch: step.pitch,
+            bearing: step.bearing,
+            duration: step.duration,
             essential: true,
             easing: (t) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
         });
 
-        currentIndex++;
-        setTimeout(() => {
-            if (tourRunning) flyToNext();
-        }, 4500);
+        currentStep++;
+        setTimeout(animateTimeline, step.duration + 500);
     }
-
-    function startTour() {
-        const btn = document.getElementById('startBtn');
-        if (!tourRunning) {
-            tourRunning = true;
-            currentIndex = 0;
-            btn.textContent = '⏸ Pause';
-            flyToNext();
-        } else {
-            tourRunning = false;
-            btn.textContent = '▶ Resume';
-        }
-    }
-
-    map.addControl(new maplibregl.NavigationControl(), 'bottom-right');
 </script>
 </body>
 </html>
