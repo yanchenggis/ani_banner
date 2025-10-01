@@ -2,69 +2,30 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>KL 3D Buildings - Zoom Growth Animation</title>
+    <title>KL 3D Buildings</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src='https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js'></script>
     <link href='https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css' rel='stylesheet' />
     <style>
         body { margin: 0; padding: 0; }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; }
-        #controls {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            z-index: 1;
-            font-family: Arial, sans-serif;
-        }
-        button {
-            padding: 10px 20px;
-            margin: 5px 0;
-            border: none;
-            border-radius: 4px;
-            background: #1976d2;
-            color: white;
-            cursor: pointer;
-            font-size: 14px;
-            width: 100%;
-        }
-        button:hover {
-            background: #1565c0;
-        }
-        .info {
-            font-size: 13px;
-            color: #666;
-            margin: 8px 0;
-        }
     </style>
 </head>
 <body>
-<div id="controls">
-    <div style="font-weight: bold; margin-bottom: 10px; color: #333;">🏙️ KL Building Growth</div>
-    <button onclick="startAutoZoom()">▶ Play Zoom Animation</button>
-    <button onclick="resetView()">↺ Reset View</button>
-    <div class="info">Zoom out → Buildings at ground level</div>
-    <div class="info">Zoom in → Buildings grow to full height</div>
-    <div class="info" style="margin-top: 10px;">Current Zoom: <span id="zoomLevel">13</span></div>
-</div>
 <div id="map"></div>
 <script>
     const map = new maplibregl.Map({
         container: 'map',
         style: 'https://tiles.openfreemap.org/styles/liberty',
         center: [101.7118, 3.1578], // KLCC, Kuala Lumpur
-        zoom: 13, // Start zoomed out
+        zoom: 13,
         pitch: 60,
         bearing: -17
     });
 
-    const zoomLevel = document.getElementById('zoomLevel');
-
     map.on('load', () => {
         // Add 3D buildings with zoom-based height interpolation
+        // Green for low buildings, blue for tall buildings (matching your theme)
         map.addLayer({
             'id': '3d-buildings',
             'source': 'openmaptiles',
@@ -76,67 +37,35 @@
                     'interpolate',
                     ['linear'],
                     ['get', 'render_height'],
-                    0, '#e0e0e0',
-                    50, '#90caf9',
-                    100, '#42a5f5',
-                    200, '#1976d2',
-                    300, '#0d47a1',
-                    450, '#ffd700'
+                    0, '#21C875',      // Green for low buildings (matching your theme)
+                    50, '#1BA668',     // Darker green
+                    100, '#17855A',    // Green-blue transition
+                    150, '#13644C',    // 
+                    200, '#0F5DF4',    // Blue for tall buildings (matching your theme)
+                    300, '#0A4BC4',    // Darker blue
+                    450, '#0539A4'     // Deep blue for skyscrapers
                 ],
-                // Buildings grow from 0 to full height between zoom 13 and 17
+                // Buildings grow smoothly from 0 to full height as you zoom
                 'fill-extrusion-height': [
                     'interpolate',
                     ['linear'],
                     ['zoom'],
-                    13, 0,  // At zoom 13: buildings are flat (height = 0)
-                    17, ['get', 'render_height']  // At zoom 17: full height
+                    13, 0,  // At zoom 13: buildings are flat
+                    16, ['get', 'render_height']  // At zoom 16: full height (faster than 17)
                 ],
                 'fill-extrusion-base': [
                     'interpolate',
                     ['linear'],
                     ['zoom'],
                     13, 0,
-                    17, ['get', 'render_min_height']
+                    16, ['get', 'render_min_height']
                 ],
                 'fill-extrusion-opacity': 0.9
             }
         });
-
-        // Update zoom level display
-        map.on('zoom', () => {
-            zoomLevel.textContent = map.getZoom().toFixed(1);
-        });
     });
 
-    // Animated zoom in function
-    function startAutoZoom() {
-        // First zoom out
-        map.easeTo({
-            zoom: 13,
-            duration: 1000
-        });
-
-        // Then zoom in after 1 second
-        setTimeout(() => {
-            map.easeTo({
-                zoom: 17,
-                duration: 4000,
-                easing: (t) => t // Linear easing for smooth growth
-            });
-        }, 1000);
-    }
-
-    function resetView() {
-        map.easeTo({
-            center: [101.7118, 3.1578],
-            zoom: 13,
-            pitch: 60,
-            bearing: -17,
-            duration: 1000
-        });
-    }
-
-    // Add zoom and rotation controls
+    // Add navigation controls
     map.addControl(new maplibregl.NavigationControl(), 'bottom-right');
 </script>
 </body>
