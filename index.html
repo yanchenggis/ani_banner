@@ -39,13 +39,13 @@
             font-size: 4em;
             font-weight: bold;
             margin-bottom: 15px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            text-shadow: 3px 3px 8px rgba(0,0,0,0.7), 1px 1px 3px rgba(0,0,0,0.9);
             font-family: Arial, sans-serif;
         }
         .subtitle {
             font-size: 1.5em;
             opacity: 0.9;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            text-shadow: 2px 2px 6px rgba(0,0,0,0.7), 1px 1px 3px rgba(0,0,0,0.9);
             font-family: Arial, sans-serif;
         }
         @media (max-width: 768px) {
@@ -89,20 +89,30 @@
         // Start: Overview from far - show ground very quickly
         { coordinates: [101.6941, 3.1466], zoom: 12.5, pitch: 45, bearing: 0, duration: 800, pause: 200 },
         
-        // Zoom to Dayabumi (1984) - zoom in fast to show colored buildings
-        { coordinates: [101.6941, 3.1466], zoom: 16.5, pitch: 60, bearing: 30, duration: 2500, pause: 2000 },
+        // Dayabumi (1984) - fly to location, look down first
+        { coordinates: [101.6941, 3.1466], zoom: 16.5, pitch: 35, bearing: 30, duration: 2000, pause: 500 },
+        // Then tilt up to see the tops
+        { coordinates: [101.6941, 3.1466], zoom: 16.5, pitch: 70, bearing: 30, duration: 1500, pause: 1500 },
         
-        // Pan to KL Tower area (1995)
-        { coordinates: [101.7034, 3.1529], zoom: 16.5, pitch: 60, bearing: -20, duration: 3500, pause: 2000 },
+        // KL Tower (1995) - fly to location, look down first
+        { coordinates: [101.7034, 3.1529], zoom: 16.5, pitch: 35, bearing: -20, duration: 2500, pause: 500 },
+        // Then tilt up
+        { coordinates: [101.7034, 3.1529], zoom: 16.5, pitch: 70, bearing: -20, duration: 1500, pause: 1500 },
         
-        // Pan to KLCC/Petronas (1996)
-        { coordinates: [101.7116, 3.1579], zoom: 16.5, pitch: 60, bearing: 40, duration: 3500, pause: 2000 },
+        // Petronas (1996) - fly to location, look down first
+        { coordinates: [101.7116, 3.1579], zoom: 16.5, pitch: 35, bearing: 40, duration: 2500, pause: 500 },
+        // Then tilt up
+        { coordinates: [101.7116, 3.1579], zoom: 16.5, pitch: 70, bearing: 40, duration: 1500, pause: 1500 },
         
-        // Pan to TRX (2019)
-        { coordinates: [101.7186, 3.1415], zoom: 16.5, pitch: 60, bearing: -30, duration: 3500, pause: 2000 },
+        // TRX (2019) - fly to location, look down first
+        { coordinates: [101.7186, 3.1415], zoom: 16.5, pitch: 35, bearing: -30, duration: 2500, pause: 500 },
+        // Then tilt up
+        { coordinates: [101.7186, 3.1415], zoom: 16.5, pitch: 70, bearing: -30, duration: 1500, pause: 1500 },
         
-        // Pan to Merdeka 118 (2023)
-        { coordinates: [101.7004, 3.1415], zoom: 16.5, pitch: 60, bearing: 15, duration: 3500, pause: 2000 },
+        // Merdeka 118 (2023) - fly to location, look down first
+        { coordinates: [101.7004, 3.1415], zoom: 16.5, pitch: 35, bearing: 15, duration: 2500, pause: 500 },
+        // Then tilt up
+        { coordinates: [101.7004, 3.1415], zoom: 16.5, pitch: 70, bearing: 15, duration: 1500, pause: 1500 },
         
         // Zoom out to overview
         { coordinates: [101.7050, 3.1480], zoom: 13, pitch: 50, bearing: 0, duration: 3000, pause: 800 }
@@ -111,9 +121,6 @@
     let currentStep = 0;
 
     map.on('load', () => {
-        // First, modify the base map to make ground dark grey instead of black
-        map.setPaintProperty('background', 'background-color', '#4a4a4a');
-        
         // Add 3D buildings with solid colors
         map.addLayer({
             'id': '3d-buildings',
