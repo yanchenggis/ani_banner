@@ -1,18 +1,59 @@
-html_content = """
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
-    <title>KL 3D Buildings</title>
+    <title>KL 3D Buildings - Growth Animation</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src='https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js'></script>
     <link href='https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css' rel='stylesheet' />
     <style>
         body { margin: 0; padding: 0; }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        #controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 1;
+            font-family: Arial, sans-serif;
+        }
+        #slider {
+            width: 200px;
+            margin: 10px 0;
+        }
+        button {
+            padding: 8px 16px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            background: #1976d2;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #1565c0;
+        }
+        .info {
+            font-size: 14px;
+            color: #333;
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
+<div id="controls">
+    <div class="info"><strong>Building Growth Animation</strong></div>
+    <div class="info">Growth: <span id="percentage">0</span>%</div>
+    <input type="range" id="slider" min="0" max="100" value="0">
+    <div>
+        <button onclick="animateGrowth()">▶ Animate Growth</button>
+        <button onclick="resetGrowth()">↺ Reset</button>
+    </div>
+</div>
 <div id="map"></div>
 <script>
     const map = new maplibregl.Map({
@@ -24,8 +65,12 @@ html_content = """
         bearing: -17
     });
 
+    let growthMultiplier = 0;
+    const slider = document.getElementById('slider');
+    const percentage = document.getElementById('percentage');
+
     map.on('load', () => {
-        // Add 3D buildings
+        // Add 3D buildings layer
         map.addLayer({
             'id': '3d-buildings',
             'source': 'openmaptiles',
@@ -36,7 +81,7 @@ html_content = """
                 'fill-extrusion-color': [
                     'interpolate',
                     ['linear'],
-                    ['get', 'render_height'],
+                    ['*', ['get', 'render_height'], 0],
                     0, '#e0e0e0',
                     50, '#90caf9',
                     100, '#42a5f5',
@@ -44,19 +89,61 @@ html_content = """
                     300, '#0d47a1',
                     450, '#ffd700'
                 ],
-                'fill-extrusion-height': ['get', 'render_height'],
-                'fill-extrusion-base': ['get', 'render_min_height'],
+                'fill-extrusion-height': ['*', ['get', 'render_height'], 0],
+                'fill-extrusion-base': ['*', ['get', 'render_min_height'], 0],
                 'fill-extrusion-opacity': 0.9
             }
         });
+
+        // Update buildings when slider changes
+        slider.addEventListener('input', (e) => {
+            growthMultiplier = e.target.value / 100;
+            percentage.textContent = e.target.value;
+            updateBuildings();
+        });
     });
+
+    function updateBuildings() {
+        map.setPaintProperty('3d-buildings', 'fill-extrusion-height', 
+            ['*', ['get', 'render_height'], growthMultiplier]
+        );
+        map.setPaintProperty('3d-buildings', 'fill-extrusion-base', 
+            ['*', ['get', 'render_min_height'], growthMultiplier]
+        );
+        map.setPaintProperty('3d-buildings', 'fill-extrusion-color', [
+            'interpolate',
+            ['linear'],
+            ['*', ['get', 'render_height'], growthMultiplier],
+            0, '#e0e0e0',
+            50, '#90caf9',
+            100, '#42a5f5',
+            200, '#1976d2',
+            300, '#0d47a1',
+            450, '#ffd700'
+        ]);
+    }
+
+    function animateGrowth() {
+        let current = 0;
+        const interval = setInterval(() => {
+            if (current >= 100) {
+                clearInterval(interval);
+                return;
+            }
+            current += 1;
+            slider.value = current;
+            percentage.textContent = current;
+            growthMultiplier = current / 100;
+            updateBuildings();
+        }, 30); // 3 seconds total animation
+    }
+
+    function resetGrowth() {
+        slider.value = 0;
+        percentage.textContent = 0;
+        growthMultiplier = 0;
+        updateBuildings();
+    }
 </script>
 </body>
 </html>
-"""
-
-# Save and open in browser
-with open('kl_3d_buildings.html', 'w') as f:
-    f.write(html_content)
-
-print("Open kl_3d_buildings.html in your browser!")
