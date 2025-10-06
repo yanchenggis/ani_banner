@@ -81,8 +81,13 @@
         center: [101.6941, 3.1466],
         zoom: 12.5,
         pitch: 45,
-        bearing: 0
+        bearing: 0,
+        touchPitch: true,
+        touchZoomRotate: true,
+        dragRotate: true
     });
+
+    map.addControl(new maplibregl.NavigationControl(), 'top-right');
 
     // Chronological journey through KL's development
     const timeline = [
@@ -188,3 +193,4 @@
 </script>
 </body>
 </html>
+
